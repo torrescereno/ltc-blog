@@ -1,7 +1,4 @@
-"use client";
-
 import { Github } from "lucide-react";
-import { ThemeToggle } from "./theme-toggle";
 
 export function Header() {
   return (
@@ -17,20 +14,16 @@ export function Header() {
           </a>
 
           {/* Actions */}
-          <div className="flex items-center gap-2">
-            <a
-              href="https://github.com/torrescereno"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
-              title="GitHub"
-              aria-label="GitHub profile"
-            >
-              <Github size={18} />
-            </a>
-
-            <ThemeToggle />
-          </div>
+          <a
+            href="https://github.com/torrescereno"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
+            title="GitHub"
+            aria-label="GitHub profile"
+          >
+            <Github size={18} />
+          </a>
         </div>
       </div>
     </header>

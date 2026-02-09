@@ -1,22 +1,8 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 @import "highlight.js/styles/github-dark.min.css";
-@custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --muted: #f3f4f6;
-  --muted-foreground: #6b7280;
-  --card: #ffffff;
-  --card-foreground: #171717;
-  --border: #e5e7eb;
-  --input: #f3f4f6;
-  --ring: #3b82f6;
-}
-
-:root.dark,
-html.dark {
   --background: #0a0a0a; /* Base dark - OLED friendly */
   --foreground: #e4e4e7; /* zinc-200 - High contrast text */
   --muted: #27272a; /* zinc-800 - Elevated surfaces */
