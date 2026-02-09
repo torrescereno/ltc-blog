@@ -8,7 +8,7 @@ export function Header() {
           {/* Logo */}
           <a
             href="/"
-            className="w-8 h-8 p-5 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-lg shrink-0"
+            className="w-8 h-8 p-5 flex items-center justify-center font-bold text-lg shrink-0"
           >
             LTC
           </a>
