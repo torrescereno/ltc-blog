@@ -116,7 +116,7 @@ export function ArticleList({ posts }: ArticleListProps) {
         createPortal(
           <div
             ref={tooltipRef}
-            className={`fixed top-0 left-0 z-9999 pointer-events-none transition-opacity duration-200 ease-out hidden md:block w-80 bg-card border border-border shadow-2xl rounded-lg overflow-hidden ${
+            className={`fixed top-0 left-0 z-9999 pointer-events-none  hidden md:block w-80 bg-card border border-border shadow-2xl rounded-lg overflow-hidden ${
               hoveredPost ? "opacity-100" : "opacity-0"
             }`}
           >
