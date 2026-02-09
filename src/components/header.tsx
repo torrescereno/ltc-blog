@@ -2,7 +2,7 @@ import { Github } from "lucide-react";
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-md border-b border-border">
+    <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-md">
       <div className="max-w-4xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
