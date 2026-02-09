@@ -1,0 +1,112 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@import "highlight.js/styles/github-dark.min.css";
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --muted: #f3f4f6;
+  --muted-foreground: #6b7280;
+  --card: #ffffff;
+  --card-foreground: #171717;
+  --border: #e5e7eb;
+  --input: #f3f4f6;
+  --ring: #3b82f6;
+}
+
+:root.dark,
+html.dark {
+  --background: #0a0a0a; /* Base dark - OLED friendly */
+  --foreground: #e4e4e7; /* zinc-200 - High contrast text */
+  --muted: #27272a; /* zinc-800 - Elevated surfaces */
+  --muted-foreground: #a1a1aa; /* zinc-400 - Secondary text */
+  --card: #18181b; /* zinc-900 - Card backgrounds */
+  --card-foreground: #e4e4e7; /* zinc-200 - Card text */
+  --border: #3f3f46; /* zinc-700 - Visible borders */
+  --input: #27272a; /* zinc-800 - Input fields */
+  --ring: #60a5fa; /* blue-400 - Focus rings */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html {
+  background-color: var(--background);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+}
+
+@layer utilities {
+  .bg-muted {
+    background-color: var(--muted);
+  }
+  .bg-card {
+    background-color: var(--card);
+  }
+  .border-border {
+    border-color: var(--border);
+  }
+  .text-muted-foreground {
+    color: var(--muted-foreground);
+  }
+}
+
+/* Custom animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out forwards;
+}
+
+/* Line clamp utility */
+.line-clamp-4 {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  line-clamp: 4;
+  overflow: hidden;
+}
+
+/* Code blocks styling */
+.prose pre,
+pre {
+  padding: 0 !important;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+/* Internal padding for code content */
+.prose pre code,
+pre code,
+pre code.hljs,
+code.hljs {
+  display: block;
+  padding: 1rem 1.25rem !important;
+  overflow-x: auto;
+}
