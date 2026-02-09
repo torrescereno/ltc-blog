@@ -43,7 +43,7 @@ export function HomePageContent({ posts }: HomePageContentProps) {
     <div className="min-h-screen bg-background text-foreground transition-colors duration-200 font-sans relative">
       <Header />
 
-      <main className="max-w-4xl mx-auto px-4 py-8 md:py-12">
+      <main className="max-w-4xl mx-auto px-4 pt-8 pb-8">
         <PostFilters
           activeCategory={activeCategory}
           onSelectCategory={setActiveCategory}

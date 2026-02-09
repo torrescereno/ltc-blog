@@ -27,7 +27,7 @@ export function PostFilters({
   onSearchChange,
 }: PostFiltersProps) {
   return (
-    <div className="flex flex-col sm:flex-row gap-4 mb-8">
+    <div className="flex flex-col sm:flex-row gap-4 mb-16">
       {/* Category Selector */}
       <div className="relative">
         <select
