@@ -1,17 +1,26 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
-@import "highlight.js/styles/github-dark.min.css";
 
 :root {
-  --background: #0a0a0a; /* Base dark - OLED friendly */
-  --foreground: #e4e4e7; /* zinc-200 - High contrast text */
-  --muted: #27272a; /* zinc-800 - Elevated surfaces */
-  --muted-foreground: #a1a1aa; /* zinc-400 - Secondary text */
-  --card: #18181b; /* zinc-900 - Card backgrounds */
-  --card-foreground: #e4e4e7; /* zinc-200 - Card text */
-  --border: #3f3f46; /* zinc-700 - Visible borders */
-  --input: #27272a; /* zinc-800 - Input fields */
-  --ring: #d79921; /* yellow - Focus rings */
+  /* Gruvbox Dark Theme */
+  --background: #282828;       /* bg0 */
+  --foreground: #ebdbb2;       /* fg1 - main text */
+  --muted: #3c3836;            /* bg1 - elevated surfaces */
+  --muted-foreground: #a89984; /* fg4 - secondary text */
+  --card: #32302f;             /* dark0_soft - card backgrounds */
+  --card-foreground: #ebdbb2;  /* fg1 - card text */
+  --border: #504945;           /* bg2 - borders */
+  --input: #3c3836;            /* bg1 - input fields */
+  --ring: #fabd2f;             /* bright_yellow - accent/focus rings */
+  
+  /* Gruvbox accent colors */
+  --gruv-red: #fb4934;
+  --gruv-green: #b8bb26;
+  --gruv-yellow: #fabd2f;
+  --gruv-blue: #83a598;
+  --gruv-purple: #d3869b;
+  --gruv-aqua: #8ec07c;
+  --gruv-orange: #fe8019;
 }
 
 @theme inline {
@@ -80,12 +89,14 @@ body {
   overflow: hidden;
 }
 
-/* Code blocks styling */
+/* Code blocks styling - Gruvbox Dark Theme */
 .prose pre,
 pre {
   padding: 0 !important;
   border-radius: 0.5rem;
   overflow: hidden;
+  background-color: #1d2021 !important; /* dark0_hard */
+  border: 1px solid #3c3836;
 }
 
 /* Internal padding for code content */
@@ -96,6 +107,116 @@ code.hljs {
   display: block;
   padding: 1rem 1.25rem !important;
   overflow-x: auto;
+  background-color: #1d2021 !important; /* dark0_hard */
 }
 
+/* Inline code */
+:not(pre) > code {
+  background-color: #3c3836;
+  color: #fabd2f;
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+}
 
+/* Gruvbox Dark Syntax Highlighting */
+.hljs {
+  display: block;
+  overflow-x: auto;
+  padding: 1rem;
+  background: #1d2021;
+  color: #ebdbb2;
+}
+
+/* Comments */
+.hljs-comment,
+.hljs-quote {
+  color: #928374;
+  font-style: italic;
+}
+
+/* Red */
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-literal,
+.hljs-section,
+.hljs-link {
+  color: #fb4934;
+}
+
+/* Green */
+.hljs-string,
+.hljs-title,
+.hljs-name,
+.hljs-type,
+.hljs-attribute,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+  color: #b8bb26;
+}
+
+/* Yellow */
+.hljs-number,
+.hljs-meta,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-params {
+  color: #fabd2f;
+}
+
+/* Blue */
+.hljs-tag,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-regexp,
+.hljs-deletion {
+  color: #83a598;
+}
+
+/* Purple */
+.hljs-function,
+.hljs-function .hljs-keyword {
+  color: #d3869b;
+}
+
+/* Aqua */
+.hljs-class,
+.hljs-class .hljs-title,
+.hljs-attr {
+  color: #8ec07c;
+}
+
+/* Orange */
+.hljs-doctag,
+.hljs-strong {
+  color: #fe8019;
+}
+
+/* Other */
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: bold;
+}
+
+/* Override any remaining gray colors that don't contrast well */
+[style*="color: rgb(54, 65, 83)"],
+[style*="color: #364153"],
+[style*="color:#364153"],
+.text-slate-700,
+.text-gray-700 {
+  color: #a89984 !important;
+}
+
+/* Ensure prose elements use Gruvbox colors */
+.prose :where(code):not(:where(pre code)) {
+  color: #fabd2f;
+  background-color: #3c3836;
+}
+
+.prose :where(strong):not(:where([class~="not-prose"] *)) {
+  color: #ebdbb2;
+}

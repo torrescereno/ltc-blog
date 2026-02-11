@@ -8,31 +8,31 @@ interface CalloutProps {
 
 const styles = {
   info: {
-    bg: "bg-[#d79921]/10 dark:bg-[#d79921]/20",
-    border: "border-[#d79921]/30 dark:border-[#d79921]/50",
-    icon: <Info size={20} className="text-[#d79921] dark:text-[#e6b32a]" />,
+    bg: "bg-[#fabd2f]/10",
+    border: "border-[#fabd2f]/30",
+    icon: <Info size={20} className="text-[#fabd2f]" />,
   },
   warning: {
-    bg: "bg-yellow-50 dark:bg-yellow-900/20",
-    border: "border-yellow-200 dark:border-yellow-800",
+    bg: "bg-[#fe8019]/10",
+    border: "border-[#fe8019]/30",
     icon: (
       <AlertTriangle
         size={20}
-        className="text-yellow-600 dark:text-yellow-400"
+        className="text-[#fe8019]"
       />
     ),
   },
   tip: {
-    bg: "bg-green-50 dark:bg-green-900/20",
-    border: "border-green-200 dark:border-green-800",
+    bg: "bg-[#b8bb26]/10",
+    border: "border-[#b8bb26]/30",
     icon: (
-      <Lightbulb size={20} className="text-green-600 dark:text-green-400" />
+      <Lightbulb size={20} className="text-[#b8bb26]" />
     ),
   },
   danger: {
-    bg: "bg-red-50 dark:bg-red-900/20",
-    border: "border-red-200 dark:border-red-800",
-    icon: <AlertCircle size={20} className="text-red-600 dark:text-red-400" />,
+    bg: "bg-[#fb4934]/10",
+    border: "border-[#fb4934]/30",
+    icon: <AlertCircle size={20} className="text-[#fb4934]" />,
   },
 };
 

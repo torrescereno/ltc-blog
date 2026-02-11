@@ -35,7 +35,7 @@ export async function ArticleDetail({ post }: ArticleDetailProps) {
       {/* Header */}
       <header className="mb-10">
         <div className="flex items-center gap-3 mb-4 text-sm text-muted-foreground">
-          <span className="font-bold text-[#d79921] dark:text-[#e6b32a] uppercase tracking-wider">
+          <span className="font-bold text-[#fabd2f] uppercase tracking-wider">
             {post.category}
           </span>
           <span>•</span>
@@ -61,8 +61,8 @@ export async function ArticleDetail({ post }: ArticleDetailProps) {
       </header>
 
       {/* AI Summary Section */}
-      <div className="bg-[#d79921]/10 dark:bg-[#d79921]/20 border border-[#d79921]/30 dark:border-[#d79921]/50 rounded-xl p-6 mb-12">
-        <div className="flex items-center gap-2 mb-3 text-[#d79921] dark:text-[#e6b32a] font-bold text-sm uppercase tracking-wide">
+      <div className="bg-[#fabd2f]/10 border border-[#fabd2f]/30 rounded-xl p-6 mb-12">
+        <div className="flex items-center gap-2 mb-3 text-[#fabd2f] font-bold text-sm uppercase tracking-wide">
           <Sparkles size={16} />
           Resumen Rápido
         </div>
@@ -72,7 +72,7 @@ export async function ArticleDetail({ post }: ArticleDetailProps) {
       </div>
 
       {/* Content Section */}
-      <div className="prose dark:prose-invert prose-lg max-w-none prose-headings:text-foreground prose-p:text-muted-foreground prose-a:text-[#d79921] dark:prose-a:text-[#e6b32a] prose-strong:text-foreground prose-code:text-[#d79921] dark:prose-code:text-[#e6b32a] prose-code:border-0 prose-pre:bg-muted prose-pre:text-foreground prose-pre:border-0">
+      <div className="prose prose-lg max-w-none text-[#a89984] prose-headings:text-[#ebdbb2] prose-p:text-[#a89984] prose-a:text-[#fabd2f] prose-strong:text-[#ebdbb2] prose-code:text-[#fabd2f] prose-code:border-0 prose-pre:bg-[#1d2021] prose-pre:text-[#a89984] prose-pre:border prose-pre:border-[#3c3836] prose-li:text-[#a89984]">
         <MDXRemote
           source={post.content}
           components={mdxComponents}
@@ -107,7 +107,7 @@ export async function ArticleDetail({ post }: ArticleDetailProps) {
 
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-sm font-bold text-[#d79921] dark:text-[#e6b32a] hover:underline"
+            className="inline-flex items-center gap-2 text-sm font-bold text-[#fabd2f] hover:underline"
           >
             Volver a todos los posts <ExternalLink size={14} />
           </Link>
