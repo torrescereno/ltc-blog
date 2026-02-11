@@ -8,9 +8,9 @@ interface CalloutProps {
 
 const styles = {
   info: {
-    bg: "bg-blue-50 dark:bg-blue-900/20",
-    border: "border-blue-200 dark:border-blue-800",
-    icon: <Info size={20} className="text-blue-600 dark:text-blue-400" />,
+    bg: "bg-[#d79921]/10 dark:bg-[#d79921]/20",
+    border: "border-[#d79921]/30 dark:border-[#d79921]/50",
+    icon: <Info size={20} className="text-[#d79921] dark:text-[#e6b32a]" />,
   },
   warning: {
     bg: "bg-yellow-50 dark:bg-yellow-900/20",

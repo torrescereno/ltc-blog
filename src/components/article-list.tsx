@@ -123,7 +123,7 @@ export function ArticleList({ posts }: ArticleListProps) {
               <div className="flex flex-col">
                 <div className="p-4 bg-card">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold tracking-wider text-blue-600 dark:text-blue-400 uppercase">
+                    <span className="text-[10px] font-bold tracking-wider text-[#d79921] dark:text-[#e6b32a] uppercase">
                       {hoveredPost.category}
                     </span>
                     <span className="text-[10px] text-muted-foreground">
@@ -168,7 +168,7 @@ export function ArticleList({ posts }: ArticleListProps) {
                 <span className="text-xs font-mono text-muted-foreground shrink-0">
                   {post.category.slice(0, 3).toUpperCase()}
                 </span>
-                <h4 className="text-sm md:text-base font-medium text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
+                <h4 className="text-sm md:text-base font-medium text-foreground group-hover:text-[#d79921] dark:group-hover:text-[#e6b32a] transition-colors truncate">
                   {post.title}
                 </h4>
               </div>
