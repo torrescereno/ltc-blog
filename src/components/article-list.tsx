@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { ExternalLink, SearchX } from "lucide-react";
+import { SearchX } from "lucide-react";
 import { Post } from "@/types";
 import Link from "next/link";
 
@@ -77,20 +77,19 @@ export function ArticleList({ posts }: ArticleListProps) {
     return () => resizeObserver.disconnect();
   }, []);
 
-  // Group posts by date
-  const groupedPosts = posts.reduce(
-    (acc, post) => {
-      const date = post.date || "Recent";
-      if (!acc[date]) acc[date] = [];
-      acc[date].push(post);
-      return acc;
-    },
-    {} as Record<string, Post[]>,
+  // Sort posts by date (newest first)
+  const sortedPosts = [...posts].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
   );
 
-  const sortedDates = Object.keys(groupedPosts).sort(
-    (a, b) => new Date(b).getTime() - new Date(a).getTime(),
-  );
+  // Format date as dd/mm/yyyy
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
 
   if (posts.length === 0) {
     return (
@@ -155,49 +154,30 @@ export function ArticleList({ posts }: ArticleListProps) {
         )}
 
       {/* Article List */}
-      <div className="space-y-10 md:space-y-16 max-w-3xl mx-auto w-full">
-        {sortedDates.map((date) => (
-          <section key={date} className="animate-fade-in w-full">
-            <h3 className="text-sm font-bold text-muted-foreground mb-6 uppercase tracking-wider pl-2 border-l-2 border-blue-500">
-              {new Date(date).toLocaleDateString("es-ES", {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </h3>
+      <div className="space-y-0 max-w-3xl mx-auto w-full">
+        {sortedPosts.map((post: Post) => (
+          <Link
+            key={post.id}
+            href={`/${post.slug}`}
+            className="group block w-full"
+            onMouseEnter={() => setHoveredPost(post)}
+            onMouseLeave={() => setHoveredPost(null)}
+          >
+            <div className="flex items-center justify-between gap-4 py-3 px-2 rounded-md hover:bg-muted transition-colors cursor-pointer w-full border-b border-border/30 last:border-b-0">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <span className="text-xs font-mono text-muted-foreground shrink-0">
+                  {post.category.slice(0, 3).toUpperCase()}
+                </span>
+                <h4 className="text-sm md:text-base font-medium text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
+                  {post.title}
+                </h4>
+              </div>
 
-            <div className="space-y-1">
-              {groupedPosts[date].map((post) => (
-                <Link
-                  key={post.id}
-                  href={`/${post.slug}`}
-                  className="group block w-full"
-                  onMouseEnter={() => setHoveredPost(post)}
-                  onMouseLeave={() => setHoveredPost(null)}
-                >
-                  <div className="flex items-baseline gap-4 py-3 px-2 rounded-md hover:bg-muted transition-colors cursor-pointer w-full">
-                    <span className="text-xs font-mono text-muted-foreground w-16 shrink-0 text-right">
-                      {post.category.slice(0, 3).toUpperCase()}
-                    </span>
-
-                    <div className="grow min-w-0">
-                      <h4 className="text-base md:text-lg font-medium text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
-                        {post.title}
-                      </h4>
-                    </div>
-
-                    <div className="hidden md:block opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                      <ExternalLink
-                        size={14}
-                        className="text-muted-foreground"
-                      />
-                    </div>
-                  </div>
-                </Link>
-              ))}
+              <span className="text-xs text-muted-foreground shrink-0 tabular-nums">
+                {formatDate(post.date)}
+              </span>
             </div>
-          </section>
+          </Link>
         ))}
       </div>
     </>

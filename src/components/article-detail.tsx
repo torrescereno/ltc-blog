@@ -20,7 +20,7 @@ interface ArticleDetailProps {
 
 export async function ArticleDetail({ post }: ArticleDetailProps) {
   return (
-    <div className="max-w-3xl mx-auto animate-fade-in pb-20">
+    <div className="max-w-3xl mx-auto pb-20">
       {/* Navigation */}
       <Link
         href="/"
