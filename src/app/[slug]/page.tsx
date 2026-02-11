@@ -1,5 +1,6 @@
 import { ArticleDetail } from "@/components/article-detail";
 import { Header } from "@/components/header";
+import { ScrollToTop } from "@/components/scroll-to-top";
 import { getAllSlugs, getPostBySlug } from "@/lib/posts";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -50,6 +51,8 @@ export default async function PostPage({ params }: PostPageProps) {
       <main className="max-w-4xl mx-auto px-4 py-8 md:py-12">
         <ArticleDetail post={post} />
       </main>
+
+      <ScrollToTop />
     </div>
   );
 }
