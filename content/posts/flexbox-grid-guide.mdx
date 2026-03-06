@@ -1,230 +1,240 @@
 ---
-title: "Flexbox & Grid: Guía Completa de Layouts CSS"
-description: "Domina los sistemas de layout modernos de CSS: Flexbox para diseños unidimensionales y Grid para layouts bidimensionales. Guía práctica con ejemplos y propiedades clave."
+title: "Flexbox y Grid: layouts CSS sin adivinar"
+description: "Cuándo usar Flexbox, cuándo usar Grid, y por qué mezclarlos es lo más inteligente que puedes hacer. Con ejemplos reales, no teóricos."
 date: "2024-08-22"
 category: "Desarrollo"
 tags: ["css", "flexbox", "grid", "frontend", "layout"]
 ---
 
+Hay dos preguntas que se repiten en frontend: *¿uso Flexbox o Grid?* y *¿por qué no me centra este div?*
+
+La respuesta corta: Flexbox para una dimensión, Grid para dos. Pero la respuesta útil es saber leer el problema y elegir la herramienta correcta sin dudar.
+
+---
+
 ## [Flexbox](https://developer.mozilla.org/es/docs/Learn/CSS/CSS_layout/Flexbox)
 
-Flexbox es ideal para diseñar layouts unidimensionales, es decir, que se organizan en una sola dirección, ya sea fila o columna. Es especialmente útil para alinear y distribuir elementos en un contenedor, incluso si el tamaño de estos elementos es desconocido o cambia dinámicamente.
+Flexbox trabaja en una dirección a la vez: horizontal **o** vertical. Es el modelo perfecto cuando tienes elementos en fila o en columna y necesitas controlar cómo se distribuyen y alinean entre sí.
 
 <Callout type="tip">
-  **Pro tip:** Flexbox es perfecto para navbars, cards alineadas, y cualquier
-  componente donde necesites centrar elementos vertical u horizontalmente.
+  **Dónde brilla Flexbox:** navbars, grupos de botones, cards alineadas, cualquier componente donde los elementos se distribuyen en una sola dirección.
 </Callout>
 
-### Elementos Claves
+### Las propiedades que realmente usas
 
-- **display: flex;** Activa el modelo Flexbox en el contenedor padre.
-- **flex-direction** Define la dirección en la que se colocan los elementos hijos (row, row-reverse, column, column-reverse).
-- **justify-content** Alinea los elementos a lo largo del eje principal (flex-start, flex-end, center, space-between, space-around, space-evenly).
-- **align-items** Alinea los elementos a lo largo del eje transversal (perpendicular al principal) (flex-start, flex-end, center, baseline, stretch).
+```css
+.nav {
+  display: flex;
 
-### Ejemplo
+  /* Dirección del eje principal */
+  flex-direction: row; /* row | row-reverse | column | column-reverse */
+
+  /* Distribución en el eje principal */
+  justify-content: space-between; /* flex-start | center | space-around | space-evenly */
+
+  /* Alineación en el eje cruzado */
+  align-items: center; /* flex-start | flex-end | stretch | baseline */
+
+  /* Espacio entre elementos (sin márgenes individuales) */
+  gap: 16px;
+}
+```
+
+### Ejemplo real: navbar con logo y links
 
 ```html
-<!doctype html>
-<html lang="es">
-  <head>
-    <style>
-      .flex-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background-color: #f4f4f4;
-        padding: 20px;
-      }
+<nav class="nav">
+  <a href="/" class="nav__logo">MiBlog</a>
 
-      .flex-item {
-        background-color: #61dafb;
-        padding: 20px;
-        margin: 10px;
-        color: white;
-        text-align: center;
-        font-size: 18px;
-      }
-    </style>
-    <title>Ejemplo Flexbox</title>
-  </head>
-  <body>
-    <div class="flex-container">
-      <div class="flex-item">Item 1</div>
-      <div class="flex-item">Item 2</div>
-      <div class="flex-item">Item 3</div>
-    </div>
-  </body>
-</html>
+  <ul class="nav__links">
+    <li><a href="/posts">Posts</a></li>
+    <li><a href="/about">Sobre mí</a></li>
+  </ul>
+
+  <button class="nav__cta">Suscribirse</button>
+</nav>
 ```
+
+```css
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  height: 64px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.nav__links {
+  display: flex;      /* Flexbox dentro de Flexbox, totalmente válido */
+  gap: 24px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+```
+
+### Controlar cómo crecen los elementos
+
+Cuando el contenedor tiene espacio sobrante, `flex-grow` decide quién lo toma:
+
+```css
+.sidebar {
+  flex: 0 0 260px;   /* no crece, no encoge, siempre 260px */
+}
+
+.main-content {
+  flex: 1;           /* toma todo el espacio restante */
+}
+```
+
+`flex: 1` es shorthand de `flex-grow: 1; flex-shrink: 1; flex-basis: 0`. Es el más usado y el que deberías memorizar.
+
+---
 
 ## [Grid](https://developer.mozilla.org/es/docs/Web/CSS/CSS_grid_layout)
 
-Grid es ideal para crear layouts bidimensionales, es decir, que se organizan en filas y columnas. Es extremadamente poderoso y flexible, permitiendo controlar tanto la alineación de los elementos como su tamaño y posicionamiento en una cuadrícula.
+Grid trabaja en filas **y** columnas al mismo tiempo. Es el primer sistema CSS diseñado específicamente para layouts de página, y se nota.
 
 <Callout type="info">
-  **¿Sabías que?** CSS Grid fue diseñado específicamente para layouts de página
-  completa. Es la primera herramienta CSS creada desde cero para este propósito.
+  **Dónde brilla Grid:** layouts de página completa, galerías de imágenes, dashboards, cualquier estructura donde los elementos necesitan alinearse en dos ejes.
 </Callout>
 
-### Elementos Claves
+### Definir la cuadrícula
 
-- **display: grid;** Activa el modelo Grid en el contenedor padre.
-- **grid-template-columns y grid-template-rows** Definen el tamaño de las columnas y filas.
-- **grid-gap** Define el espacio entre las filas y columnas.
-- **grid-column y grid-row** Permiten a un elemento ocupar más de una columna o fila.
+```css
+.layout {
+  display: grid;
 
-### Ejemplo
+  /* 3 columnas: sidebar fijo, contenido flexible, aside fijo */
+  grid-template-columns: 240px 1fr 200px;
+
+  /* Filas: header fijo, contenido flexible, footer fijo */
+  grid-template-rows: 64px 1fr 48px;
+
+  /* La unidad fr = fracción del espacio disponible */
+  gap: 24px;
+
+  min-height: 100vh;
+}
+```
+
+### Nombrar áreas: la killer feature de Grid
+
+En lugar de coordenadas, puedes asignarle un nombre a cada zona del layout:
+
+```css
+.layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  grid-template-rows: 64px 1fr 48px;
+  grid-template-areas:
+    "header  header"
+    "sidebar main"
+    "footer  footer";
+  gap: 16px;
+  min-height: 100vh;
+}
+
+.header  { grid-area: header; }
+.sidebar { grid-area: sidebar; }
+.main    { grid-area: main; }
+.footer  { grid-area: footer; }
+```
 
 ```html
-<!doctype html>
-<html lang="es">
-  <head>
-    <style>
-      .grid-container {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        grid-gap: 20px;
-        background-color: #f4f4f4;
-        padding: 20px;
-      }
-
-      .grid-item {
-        background-color: #61dafb;
-        padding: 20px;
-        color: white;
-        text-align: center;
-        font-size: 18px;
-      }
-
-      .grid-item:nth-child(1) {
-        grid-column: span 2;
-      }
-
-      .grid-item:nth-child(4) {
-        grid-row: span 2;
-      }
-    </style>
-    <title>Ejemplo Grid</title>
-  </head>
-  <body>
-    <div class="grid-container">
-      <div class="grid-item">Item 1</div>
-      <div class="grid-item">Item 2</div>
-      <div class="grid-item">Item 3</div>
-      <div class="grid-item">Item 4</div>
-      <div class="grid-item">Item 5</div>
-      <div class="grid-item">Item 6</div>
-    </div>
-  </body>
-</html>
+<div class="layout">
+  <header class="header">Header</header>
+  <aside class="sidebar">Sidebar</aside>
+  <main class="main">Contenido principal</main>
+  <footer class="footer">Footer</footer>
+</div>
 ```
 
-## Propiedades Esenciales
+El layout completo en 10 líneas de CSS. Sin `position: absolute`, sin hacks.
 
-### gap
+### Galerías responsivas sin media queries
 
-Define el espacio entre los elementos en un contenedor flex o grid, sin necesidad de usar márgenes en los elementos individuales.
-
-**Flexbox:**
+`repeat` + `auto-fill` + `minmax` es una de las combinaciones más poderosas de CSS moderno:
 
 ```css
-.flex-container {
-  display: flex;
-  gap: 20px;
-}
-```
-
-**Grid:**
-
-```css
-.grid-container {
+.gallery {
   display: grid;
-  gap: 20px;
+
+  /*
+    auto-fill: crea tantas columnas como quepan
+    minmax(280px, 1fr): cada columna tiene mínimo 280px y máximo 1fr
+    Resultado: el grid se adapta solo al ancho del contenedor
+  */
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
 }
 ```
 
-### grid-template-columns y grid-template-rows
+Sin una sola media query, tienes una galería que pasa de 1 a 4 columnas según el ancho disponible.
 
-Permiten definir la estructura de la cuadrícula en términos de columnas y filas.
+---
+
+## Propiedades que se confunden seguido
+
+### `gap` reemplaza a `grid-gap`
+
+`grid-gap` ya está deprecado. Usa `gap` directamente, funciona igual en Flexbox y Grid:
 
 ```css
-.grid-container {
-  display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
-  grid-template-rows: auto 100px;
-}
+/* Antiguo */
+.grid { grid-gap: 20px; }
+
+/* Correcto */
+.flex { gap: 16px; }
+.grid { gap: 24px; }
+
+/* También puedes separar fila y columna */
+.grid { gap: 16px 24px; } /* row-gap column-gap */
 ```
 
-### align-items y justify-content
+### `align-items` vs `justify-content`
 
-Controlan la alineación de los elementos hijos dentro de un contenedor.
+La confusión más común. Depende del eje principal:
 
 ```css
-.container {
+/* En Flexbox con flex-direction: row (default) */
+.flex {
+  justify-content: center; /* centra horizontalmente */
+  align-items: center;     /* centra verticalmente */
+}
+
+/* Centrar un div, la forma correcta */
+.centered {
   display: flex;
+  justify-content: center;
   align-items: center;
-  justify-content: space-around;
 }
 ```
 
-### flex-grow, flex-shrink, y flex-basis
+---
 
-Propiedades exclusivas de Flexbox para controlar cómo los elementos crecen y se encogen.
+## ¿Cuándo usar cada uno?
 
-```css
-.flex-item {
-  flex-grow: 1;
-  flex-shrink: 1;
-  flex-basis: 100px;
-}
-```
-
-### grid-area y grid-template-areas
-
-Permiten crear layouts complejos nombrando áreas de la cuadrícula.
-
-```css
-.grid-container {
-  display: grid;
-  grid-template-areas:
-    "header header header"
-    "sidebar main main"
-    "footer footer footer";
-}
-
-.header {
-  grid-area: header;
-}
-.sidebar {
-  grid-area: sidebar;
-}
-.main {
-  grid-area: main;
-}
-.footer {
-  grid-area: footer;
-}
-```
-
-## Comparación: ¿Cuándo Usar Cada Uno?
-
-| Característica | Flexbox                 | Grid                       |
-| -------------- | ----------------------- | -------------------------- |
-| Dimensiones    | Unidimensional          | Bidimensional              |
-| Uso ideal      | Componentes, navegación | Layouts de página completa |
-| Alineación     | En un eje               | En filas y columnas        |
-| Soporte        | Excelente               | Excelente                  |
+| Situación | Herramienta |
+|-----------|-------------|
+| Navbar, barra de herramientas | Flexbox |
+| Grupo de botones o chips | Flexbox |
+| Layout completo de página | Grid |
+| Galería de cards | Grid |
+| Centrar un elemento | Flexbox |
+| Dashboard con múltiples secciones | Grid |
+| Componente con eje único | Flexbox |
 
 <Callout type="warning">
-  **Regla de oro:** No uses Grid para todo. Flexbox sigue siendo más simple y
-  eficiente para alineaciones básicas. Usa Grid cuando realmente necesites
-  control bidimensional.
+  **Lo que hacen todos los seniors:** combinan ambos. Grid para el layout macro de la página, Flexbox para los componentes dentro de cada celda. No es uno u otro, son capas.
 </Callout>
 
-**Regla general:** Usa Flexbox para alineación en una dirección y Grid para layouts bidimensionales complejos. Ambos se pueden combinar para aprovechar lo mejor de cada uno.
+---
 
 ## Referencias
 
-- [MDN - Flexbox](https://developer.mozilla.org/es/docs/Learn/CSS/CSS_layout/Flexbox)
-- [MDN - Grid Layout](https://developer.mozilla.org/es/docs/Web/CSS/CSS_grid_layout)
+- [MDN — Flexbox](https://developer.mozilla.org/es/docs/Learn/CSS/CSS_layout/Flexbox)
+- [MDN — Grid Layout](https://developer.mozilla.org/es/docs/Web/CSS/CSS_grid_layout)
+- [CSS Tricks — A Complete Guide to Flexbox](https://css-tricks.com/snippets/css/a-guide-to-flexbox/)
+- [CSS Tricks — A Complete Guide to Grid](https://css-tricks.com/snippets/css/complete-guide-grid/)

@@ -1,47 +1,61 @@
 ---
-title: "PySpark SQL: Guía Práctica para Procesamiento de Datos"
-description: "Aprende a procesar grandes volúmenes de datos con PySpark SQL. Desde la creación de sesiones hasta operaciones avanzadas como pivot, cache y optimización de performance."
+title: "PySpark SQL: de cero a producción"
+description: "Guía práctica de PySpark SQL con ejemplos reales sobre datos de JJ.OO. Sessions, schemas, consultas, aggregaciones, pivot y optimización de performance."
 date: "2024-08-16"
 category: "Desarrollo"
 tags: ["python", "pyspark", "big-data", "spark", "data-engineering"]
 ---
 
-PySpark SQL es un módulo poderoso para trabajar con datos estructurados y semi-estructurados a gran escala. Esta guía cubre los conceptos fundamentales y técnicas avanzadas.
+Cuando los datos ya no caben en memoria y pandas empieza a matar el proceso, PySpark entra en escena. No es magia: es procesamiento distribuido con una API que, una vez que le agarras el ritmo, se vuelve bastante directa.
+
+Esta guía cubre los patrones que uso en el día a día, con ejemplos sobre un dataset real de Juegos Olímpicos.
 
 <Callout type="info">
-  Para estos ejemplos se usó el [dataset de
-  JJ.OO](https://github.com/torrescereno/spark-notes/tree/main/data). Descárgalo
-  para seguir la guía paso a paso.
+  Los ejemplos usan el [dataset de JJ.OO](https://github.com/torrescereno/spark-notes/tree/main/data). Descárgalo para seguir la guía paso a paso.
 </Callout>
 
-## 1. Session
+---
+
+## 1. Crear la sesión
+
+Todo parte aquí. La `SparkSession` es el punto de entrada para leer datos, ejecutar SQL y acceder al contexto de Spark:
 
 ```python
 from pyspark.sql import SparkSession
 
-sp = SparkSession.builder.appName("app").getOrCreate()
-sp.sparkContext.setLogLevel("ERROR")
+spark = SparkSession.builder \
+    .appName("jjoo-analysis") \
+    .getOrCreate()
+
+spark.sparkContext.setLogLevel("ERROR")  # silencia logs innecesarios
 ```
 
-## 2. Lectura de Datos y Schema
+Un solo `getOrCreate()` por aplicación. Si ya existe una sesión activa, la reutiliza.
 
-Definir el schema explícitamente mejora el rendimiento:
+---
+
+## 2. Leer datos y definir el schema
+
+### Schema explícito (recomendado)
 
 ```python
-from pyspark.sql.types import StructType, StructField, StringType, TimestampType, IntegerType
+from pyspark.sql.types import (
+    StructType, StructField,
+    StringType, TimestampType, IntegerType
+)
 
 schema = StructType([
-    StructField("date", TimestampType(), True),
-    StructField("stage_code", StringType(), True),
-    StructField("event_code", StringType(), True),
-    StructField("event_name", StringType(), True),
-    StructField("participant_name", StringType(), True),
-    StructField("participant_country", StringType(), True),
-    StructField("rank", IntegerType(), True),
-    StructField("result", StringType(), True),
+    StructField("date",                TimestampType(), True),
+    StructField("stage_code",          StringType(),    True),
+    StructField("event_code",          StringType(),    True),
+    StructField("event_name",          StringType(),    True),
+    StructField("participant_name",    StringType(),    True),
+    StructField("participant_country", StringType(),    True),
+    StructField("rank",                IntegerType(),   True),
+    StructField("result",              StringType(),    True),
 ])
 
-df = sp.read \
+df = spark.read \
     .format("csv") \
     .option("header", True) \
     .schema(schema) \
@@ -49,155 +63,200 @@ df = sp.read \
 ```
 
 <Callout type="tip">
-  **Tip de rendimiento:** Definir el schema explícitamente evita que Spark tenga
-  que leer todo el archivo para inferir los tipos, lo cual puede ser muy costoso
-  en datasets grandes.
+  **Por qué definir el schema:** con `inferSchema=True`, Spark lee el archivo completo dos veces para adivinar los tipos. En datasets de millones de filas eso duele. Si ya sabes la estructura, declárala.
 </Callout>
 
-Alternativamente, puedes inferir el schema:
+### Schema inferido (rápido para exploración)
 
 ```python
-df = sp.read.option("header", True) \
+df = spark.read \
+    .option("header", True) \
     .option("inferSchema", True) \
     .csv("data/results")
+
+df.printSchema()  # siempre verifica que Spark infirió bien los tipos
+df.show(5)
 ```
+
+---
 
 ## 3. Consultas SQL
 
-Crea una vista temporal para usar SQL:
+PySpark te deja escribir SQL puro sobre tus DataFrames. Primero registras una vista temporal, después consultas:
 
 ```python
 df.createOrReplaceTempView("jjoo")
 
-result = sp.sql("""
-    SELECT *
+# SQL normal sobre datos distribuidos
+result = spark.sql("""
+    SELECT
+        participant_country,
+        COUNT(DISTINCT participant_name) AS athletes
     FROM jjoo
-    WHERE participant_country = 'Chile'
+    WHERE rank = 1
+    GROUP BY participant_country
+    ORDER BY athletes DESC
+    LIMIT 10
 """)
-result.show(5)
+
+result.show()
 ```
 
-## 4. Operaciones sobre Columnas
+Las vistas temporales viven mientras exista la sesión. Para algo persistente entre sesiones, usa `createOrReplaceGlobalTempView` y accede con el prefijo `global_temp.`.
 
-### Filters
+---
+
+## 4. Filtros y transformaciones
+
+### Filtrar filas
 
 ```python
 from pyspark.sql import functions as F
 
-# Usando filter
-df.filter(df["participant_country"] == "Chile") \
-    .select("participant_name") \
-    .distinct() \
-    .show()
+# Forma directa
+chilenos = df.filter(df["participant_country"] == "Chile")
 
-# Usando where (más expresivo)
-df.where(
-    (F.col("participant_country") == "Chile") &
-    (F.col("gender").isin(["M", "W"]))
-).count()
+# Con F.col, más limpio cuando combinas condiciones
+finalistas = df.where(
+    (F.col("rank") <= 3) &
+    (F.col("participant_country").isin(["Chile", "Argentina", "Brasil"]))
+)
+
+finalistas.select("participant_name", "event_name", "rank").show(10)
 ```
 
-### Transformaciones
+`filter` y `where` hacen exactamente lo mismo, es preferencia de estilo. Yo uso `where` cuando las condiciones son compuestas, se lee más natural.
+
+### Modificar columnas
 
 ```python
-# Agregar columna
-df.withColumn("upper_name", F.upper(df.participant_name))
-
-# Renombrar columna
-df.withColumnRenamed("date", "fecha")
+df_clean = df \
+    .withColumn("country_upper", F.upper(F.col("participant_country"))) \
+    .withColumn("is_medalist", F.col("rank") <= 3) \
+    .withColumnRenamed("date", "event_date") \
+    .drop("stage_code")   # columna que no necesitamos
 ```
 
-## 5. Agrupaciones y Agregaciones
+Encadenar transformaciones así es idiomático en PySpark. Cada método devuelve un nuevo DataFrame, el original no se modifica.
+
+---
+
+## 5. Agrupaciones y agregaciones
 
 ```python
-# Eventos por disciplina
+# Disciplinas con más eventos únicos
 df.groupBy("discipline_name") \
-    .agg(F.countDistinct("event_name").alias("unique_events")) \
-    .show(5)
+    .agg(
+        F.countDistinct("event_name").alias("unique_events"),
+        F.count("participant_name").alias("total_participations")
+    ) \
+    .orderBy(F.desc("unique_events")) \
+    .show(10)
+```
 
-# Países con más participantes
+```python
+# Top países por número de atletas distintos
 df.groupBy("participant_country") \
     .agg(F.countDistinct("participant_name").alias("athletes")) \
     .orderBy(F.desc("athletes")) \
-    .show(5)
+    .show(10)
 ```
 
-## 6. Pivot
+`F.countDistinct` evita contar duplicados, que es casi siempre lo que quieres cuando mides participantes.
 
-Transforma filas en columnas:
+---
+
+## 6. Pivot: de filas a columnas
+
+Útil para tablas de resumen donde quieres cruzar dos dimensiones:
 
 ```python
 # Participantes por género en cada país
+# Filas = países, columnas = géneros (M, W, X)
 df.groupBy("participant_country") \
     .pivot("gender") \
-    .agg(F.count("participant_code")) \
-    .orderBy(F.asc("participant_country")) \
-    .show(5)
+    .agg(F.count("participant_name")) \
+    .orderBy("participant_country") \
+    .show(10)
 ```
 
-## 7. Optimización de Performance
+El resultado es un DataFrame donde cada valor único de `gender` se convierte en columna. Si conoces los valores posibles de antemano, pásalos explícitamente para que Spark no tenga que calcularlo:
 
-### Cache
+```python
+df.groupBy("participant_country") \
+    .pivot("gender", ["M", "W", "X"]) \
+    .agg(F.count("participant_name")) \
+    .show(10)
+```
 
-Almacena DataFrames en memoria para reutilización:
+---
+
+## 7. Optimización de performance
+
+<Callout type="warning">
+  **Lazy evaluation:** Spark no ejecuta nada hasta que llamas una acción: `.show()`, `.collect()`, `.count()`, `.write`. Todo lo anterior solo construye el plan de ejecución. Esto es una ventaja, no un bug: Spark puede optimizar el plan completo antes de ejecutarlo.
+</Callout>
+
+### Cache: no reprocesar lo que ya calculaste
+
+Si vas a usar el mismo DataFrame varias veces, cachearlo evita recalcularlo desde cero cada vez:
 
 ```python
 from pyspark import StorageLevel
 
-# Cache básico (memoria y disco)
+# Cache básico: memoria + disco si no cabe en RAM
 df.cache()
 
-# Control granular
-from pyspark import StorageLevel
-df.persist(StorageLevel.MEMORY_ONLY)
-df.persist(StorageLevel.DISK_ONLY)
-df.persist(StorageLevel.MEMORY_AND_DISK)
+# Control fino sobre dónde almacenar
+df.persist(StorageLevel.MEMORY_ONLY)       # solo RAM, más rápido
+df.persist(StorageLevel.DISK_ONLY)         # solo disco, más lento pero estable
+df.persist(StorageLevel.MEMORY_AND_DISK)   # RAM primero, disco como fallback
 
-# Liberar memoria
+# Liberar cuando ya no lo necesitas
 df.unpersist()
 ```
 
-### Plan de Ejecución
+Regla práctica: cachea cuando el DataFrame es resultado de una transformación costosa y lo vas a usar en más de una acción.
 
-Analiza cómo Spark ejecutará tus operaciones:
+### Plan de ejecución
 
-```python
-# Plan lógico y físico
-df.groupBy("participant_code").count().explain(mode="cost")
-
-# Solo plan físico
-df.explain()
-```
-
-### Repartition
-
-Optimiza la distribución de datos:
+Antes de correr un job pesado, revisa cómo Spark piensa ejecutarlo:
 
 ```python
-# Redistribuir a 20 particiones por columna
-df_repartitioned = df.repartition(20, "participant_code")
+# Ver el plan físico (lo que Spark realmente hará)
+df.groupBy("participant_country").count().explain()
 
-# Aplicar función a cada partición
-def process_partition(rows):
-    count = sum(1 for _ in rows)
-    print(f"Partition has {count} records")
-
-df_repartitioned.foreachPartition(process_partition)
+# Plan detallado con costos estimados
+df.groupBy("participant_country").count().explain(mode="cost")
 ```
 
-## Mejores Prácticas
+Busca operaciones como `BroadcastHashJoin` (buenas) vs `SortMergeJoin` (más costosas), y `Filter` cerca del inicio del plan, lo que indica que Spark está filtrando antes de procesar.
 
-<Callout type="warning">
-  **Atención:** Los DataFrames son evaluados perezosamente (lazy evaluation).
-  Las operaciones no se ejecutan hasta que llamas una acción como `.show()`,
-  `.collect()` o `.write`.
-</Callout>
+### Repartition: controlar la distribución
 
-1. **Define schemas explícitamente** para evitar inferencia costosa
-2. **Usa cache** cuando reutilizarás un DataFrame múltiples veces
-3. **Filtra temprano** para reducir el volumen de datos procesados
-4. **Revisa el plan de ejecución** para identificar cuellos de botella
-5. **Ajusta particiones** según el tamaño de tu clúster
+```python
+# Redistribuir a 20 particiones balanceadas por columna
+df_rep = df.repartition(20, "participant_country")
+
+# Verificar cuántos registros hay por partición
+df_rep.foreachPartition(
+    lambda rows: print(f"partición con {sum(1 for _ in rows)} registros")
+)
+```
+
+Más particiones = más paralelismo, pero también más overhead. Como punto de partida, apunta a particiones de entre 100MB y 200MB.
+
+---
+
+## Patrones que aplico en producción
+
+1. **Schema siempre explícito** en código de producción. `inferSchema` es para notebooks de exploración.
+2. **Filtra lo antes posible** en el pipeline. Reducir filas temprano reduce todo lo que viene después.
+3. **Cachea con criterio**, no por default. El cache mal usado consume memoria sin beneficio.
+4. **Revisa el explain** antes de mandar un job al clúster. Cinco minutos leyendo el plan evitan media hora esperando un job mal construido.
+5. **Usa `F.col()` sobre `df["columna"]`** cuando las expresiones son compuestas. Es más legible y evita problemas al referenciar columnas entre DataFrames.
+
+---
 
 ## Referencias
 

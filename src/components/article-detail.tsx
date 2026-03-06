@@ -42,6 +42,10 @@ export async function ArticleDetail({ post }: ArticleDetailProps) {
           <span className="flex items-center gap-1">
             <Clock size={14} /> {post.date}
           </span>
+          <span>•</span>
+          <span className="flex items-center gap-1">
+            <Clock size={14} /> {post.readingTime} min de lectura
+          </span>
         </div>
 
         <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight mb-6">

@@ -7,6 +7,7 @@ export interface Post {
   category: Category;
   tags: string[];
   content: string;
+  readingTime: number;
 }
 
 export type Category =

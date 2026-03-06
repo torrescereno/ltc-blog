@@ -5,6 +5,12 @@ import path from "path";
 
 const postsDirectory = path.join(process.cwd(), "content/posts");
 
+function calculateReadingTime(content: string): number {
+  const wordsPerMinute = 200;
+  const wordCount = content.trim().split(/\s+/).length;
+  return Math.max(1, Math.ceil(wordCount / wordsPerMinute));
+}
+
 function getPostFile(slug: string): { fullPath: string; extension: string } | null {
   const mdxPath = path.join(postsDirectory, `${slug}.mdx`);
   const mdPath = path.join(postsDirectory, `${slug}.md`);
@@ -37,6 +43,7 @@ export function getAllPosts(): Post[] {
         category: data.category as Post["category"],
         tags: (data.tags as string[]) || [],
         content,
+        readingTime: calculateReadingTime(content),
       };
     })
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -61,6 +68,7 @@ export function getPostBySlug(slug: string): Post | null {
       category: data.category as Post["category"],
       tags: (data.tags as string[]) || [],
       content,
+      readingTime: calculateReadingTime(content),
     };
   } catch {
     return null;
