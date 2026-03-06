@@ -34,7 +34,7 @@ export async function ArticleDetail({ post }: ArticleDetailProps) {
 
       {/* Header */}
       <header className="mb-10">
-        <div className="flex items-center gap-3 mb-4 text-sm text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-2 mb-4 text-sm text-muted-foreground">
           <span className="font-bold text-[#fabd2f] uppercase tracking-wider">
             {post.category}
           </span>
@@ -65,7 +65,7 @@ export async function ArticleDetail({ post }: ArticleDetailProps) {
       </header>
 
       {/* AI Summary Section */}
-      <div className="bg-[#fabd2f]/10 border border-[#fabd2f]/30 rounded-xl p-6 mb-12">
+      <div className="bg-[#fabd2f]/10 border border-[#fabd2f]/30 rounded-xl p-4 md:p-6 mb-12">
         <div className="flex items-center gap-2 mb-3 text-[#fabd2f] font-bold text-sm uppercase tracking-wide">
           <Sparkles size={16} />
           Resumen Rápido
@@ -76,7 +76,7 @@ export async function ArticleDetail({ post }: ArticleDetailProps) {
       </div>
 
       {/* Content Section */}
-      <div className="prose prose-lg max-w-none text-[#a89984] prose-headings:text-[#ebdbb2] prose-p:text-[#a89984] prose-a:text-[#fabd2f] prose-strong:text-[#ebdbb2] prose-code:text-[#fabd2f] prose-code:border-0 prose-pre:bg-[#1d2021] prose-pre:text-[#a89984] prose-pre:border prose-pre:border-[#3c3836] prose-li:text-[#a89984]">
+      <div className="prose md:prose-lg max-w-none text-[#a89984] prose-headings:text-[#ebdbb2] prose-p:text-[#a89984] prose-a:text-[#fabd2f] prose-strong:text-[#ebdbb2] prose-code:text-[#fabd2f] prose-code:border-0 prose-pre:bg-[#1d2021] prose-pre:text-[#a89984] prose-pre:border prose-pre:border-[#3c3836] prose-li:text-[#a89984]">
         <MDXRemote
           source={post.content}
           components={mdxComponents}

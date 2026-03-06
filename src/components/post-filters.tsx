@@ -29,11 +29,11 @@ export function PostFilters({
   return (
     <div className="flex flex-col sm:flex-row gap-4 mb-16">
       {/* Category Selector */}
-      <div className="relative">
+      <div className="relative w-full sm:w-auto">
         <select
           value={activeCategory}
           onChange={(e) => onSelectCategory(e.target.value as Category)}
-          className="appearance-none pl-4 pr-10 py-2 bg-muted border border-border hover:border-border/80 rounded-lg text-sm font-semibold text-foreground focus:ring-2 focus:ring-ring focus:outline-none cursor-pointer transition-all shadow-sm"
+          className="w-full sm:w-auto appearance-none pl-4 pr-10 py-2 bg-muted border border-border hover:border-border/80 rounded-lg text-sm font-semibold text-foreground focus:ring-2 focus:ring-ring focus:outline-none cursor-pointer transition-all shadow-sm"
         >
           {categories.map((category) => (
             <option

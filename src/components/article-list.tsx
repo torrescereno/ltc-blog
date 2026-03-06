@@ -163,7 +163,7 @@ export function ArticleList({ posts }: ArticleListProps) {
             onMouseEnter={() => setHoveredPost(post)}
             onMouseLeave={() => setHoveredPost(null)}
           >
-            <div className="flex items-center justify-between gap-4 py-3 px-2 rounded-md hover:bg-muted transition-colors cursor-pointer w-full border-b border-border/30 last:border-b-0">
+            <div className="flex items-center justify-between gap-2 sm:gap-4 py-3 px-2 rounded-md hover:bg-muted transition-colors cursor-pointer w-full border-b border-border/30 last:border-b-0">
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <span className="text-xs font-mono text-muted-foreground shrink-0">
                   {post.category.slice(0, 3).toUpperCase()}
