@@ -31,17 +31,25 @@ function getPostFile(
 }
 
 export function getAllPosts(): Post[] {
+  return getAllPostsByLang("es");
+}
+
+export function getAllPostsByLang(lang: "es" | "en" = "es"): Post[] {
   const fileNames = fs.readdirSync(postsDirectory);
-  const allPosts = fileNames
+  const slugs = fileNames
     .filter(
       (fileName) =>
         (fileName.endsWith(".md") || fileName.endsWith(".mdx")) &&
         !fileName.includes(".en."),
     )
-    .map((fileName) => {
-      const slug = fileName.replace(/\.(md|mdx)$/, "");
-      const fullPath = path.join(postsDirectory, fileName);
-      const fileContents = fs.readFileSync(fullPath, "utf8");
+    .map((fileName) => fileName.replace(/\.(md|mdx)$/, ""));
+
+  return slugs
+    .map((slug) => {
+      const fileInfo = getPostFile(slug, lang);
+      if (!fileInfo) return null;
+
+      const fileContents = fs.readFileSync(fileInfo.fullPath, "utf8");
       const { data, content } = matter(fileContents);
 
       return {
@@ -56,9 +64,8 @@ export function getAllPosts(): Post[] {
         readingTime: calculateReadingTime(content),
       };
     })
+    .filter((p): p is Post => p !== null)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-  return allPosts;
 }
 
 export function getPostBySlug(slug: string, lang: "es" | "en" = "es"): Post | null {

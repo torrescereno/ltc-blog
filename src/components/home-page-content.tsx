@@ -4,14 +4,18 @@ import { ArticleList } from "@/components/article-list";
 import { Header } from "@/components/header";
 import { PostFilters } from "@/components/post-filters";
 import { ScrollToTop } from "@/components/scroll-to-top";
+import { useLanguage } from "@/contexts/language-context";
 import { Category, Post } from "@/types";
 import { useMemo, useState } from "react";
 
 interface HomePageContentProps {
-  posts: Post[];
+  esPosts: Post[];
+  enPosts: Post[];
 }
 
-export function HomePageContent({ posts }: HomePageContentProps) {
+export function HomePageContent({ esPosts, enPosts }: HomePageContentProps) {
+  const { language } = useLanguage();
+  const posts = language === "en" ? enPosts : esPosts;
   const [activeCategory, setActiveCategory] = useState<Category>("Todos");
   const [searchQuery, setSearchQuery] = useState("");
 

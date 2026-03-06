@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { SearchX } from "lucide-react";
 import { Post } from "@/types";
@@ -16,13 +16,13 @@ export function ArticleList({ posts }: ArticleListProps) {
   const { language } = useLanguage();
   const t = translations[language];
   const [hoveredPost, setHoveredPost] = useState<Post | null>(null);
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
   const tooltipRef = useRef<HTMLDivElement>(null);
   const mousePositionRef = useRef({ x: 0, y: 0 });
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   // Update tooltip position based on current mouse position
   const updateTooltipPosition = () => {
@@ -127,7 +127,7 @@ export function ArticleList({ posts }: ArticleListProps) {
                 <div className="p-4 bg-card">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-bold tracking-wider text-[#fabd2f] uppercase">
-                      {hoveredPost.category}
+                      {t.categories[hoveredPost.category]}
                     </span>
                     <span className="text-[10px] text-muted-foreground">
                       {hoveredPost.date}
@@ -161,7 +161,7 @@ export function ArticleList({ posts }: ArticleListProps) {
         {sortedPosts.map((post: Post) => (
           <Link
             key={post.id}
-            href={`/${post.slug}`}
+            href={language === "en" ? `/en/${post.slug}` : `/${post.slug}`}
             className="group block w-full"
             onMouseEnter={() => setHoveredPost(post)}
             onMouseLeave={() => setHoveredPost(null)}
