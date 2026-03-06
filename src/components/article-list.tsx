@@ -5,12 +5,16 @@ import { createPortal } from "react-dom";
 import { SearchX } from "lucide-react";
 import { Post } from "@/types";
 import Link from "next/link";
+import { useLanguage } from "@/contexts/language-context";
+import { translations } from "@/i18n/translations";
 
 interface ArticleListProps {
   posts: Post[];
 }
 
 export function ArticleList({ posts }: ArticleListProps) {
+  const { language } = useLanguage();
+  const t = translations[language];
   const [hoveredPost, setHoveredPost] = useState<Post | null>(null);
   const [mounted, setMounted] = useState(false);
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -98,11 +102,10 @@ export function ArticleList({ posts }: ArticleListProps) {
           <SearchX size={64} strokeWidth={1} />
         </div>
         <h3 className="text-xl font-bold text-foreground mb-2">
-          No se encontraron posts
+          {t.articleList.notFound}
         </h3>
         <p className="text-muted-foreground max-w-sm mx-auto leading-relaxed">
-          No pudimos encontrar ningún post que coincida con tus filtros o
-          criterios de búsqueda actuales.
+          {t.articleList.notFoundDesc}
         </p>
       </div>
     );

@@ -1,0 +1,240 @@
+---
+title: "Flexbox and Grid: CSS layouts without guessing"
+description: "When to use Flexbox, when to use Grid, and why combining them is the smartest thing you can do. With real examples, not theoretical ones."
+date: "2024-08-22"
+category: "Desarrollo"
+tags: ["css", "flexbox", "grid", "frontend", "layout"]
+---
+
+There are two questions that keep coming up in frontend: *should I use Flexbox or Grid?* and *why won't this div center?*
+
+The short answer: Flexbox for one dimension, Grid for two. But the useful answer is knowing how to read the problem and pick the right tool without hesitation.
+
+---
+
+## [Flexbox](https://developer.mozilla.org/en-US/docs/Learn/CSS/CSS_layout/Flexbox)
+
+Flexbox works in one direction at a time: horizontal **or** vertical. It's the perfect model when you have elements in a row or column and need to control how they distribute and align with each other.
+
+<Callout type="tip">
+  **Where Flexbox shines:** navbars, button groups, aligned cards, any component where elements are distributed in a single direction.
+</Callout>
+
+### The properties you actually use
+
+```css
+.nav {
+  display: flex;
+
+  /* Main axis direction */
+  flex-direction: row; /* row | row-reverse | column | column-reverse */
+
+  /* Distribution along the main axis */
+  justify-content: space-between; /* flex-start | center | space-around | space-evenly */
+
+  /* Alignment along the cross axis */
+  align-items: center; /* flex-start | flex-end | stretch | baseline */
+
+  /* Space between elements (no individual margins) */
+  gap: 16px;
+}
+```
+
+### Real example: navbar with logo and links
+
+```html
+<nav class="nav">
+  <a href="/" class="nav__logo">MyBlog</a>
+
+  <ul class="nav__links">
+    <li><a href="/posts">Posts</a></li>
+    <li><a href="/about">About</a></li>
+  </ul>
+
+  <button class="nav__cta">Subscribe</button>
+</nav>
+```
+
+```css
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  height: 64px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.nav__links {
+  display: flex;      /* Flexbox inside Flexbox, totally valid */
+  gap: 24px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+```
+
+### Controlling how elements grow
+
+When the container has leftover space, `flex-grow` decides who takes it:
+
+```css
+.sidebar {
+  flex: 0 0 260px;   /* doesn't grow, doesn't shrink, always 260px */
+}
+
+.main-content {
+  flex: 1;           /* takes all remaining space */
+}
+```
+
+`flex: 1` is shorthand for `flex-grow: 1; flex-shrink: 1; flex-basis: 0`. It's the most used and the one you should memorize.
+
+---
+
+## [Grid](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_grid_layout)
+
+Grid works in rows **and** columns at the same time. It's the first CSS system specifically designed for page layouts, and it shows.
+
+<Callout type="info">
+  **Where Grid shines:** full page layouts, image galleries, dashboards, any structure where elements need to align on two axes.
+</Callout>
+
+### Defining the grid
+
+```css
+.layout {
+  display: grid;
+
+  /* 3 columns: fixed sidebar, flexible content, fixed aside */
+  grid-template-columns: 240px 1fr 200px;
+
+  /* Rows: fixed header, flexible content, fixed footer */
+  grid-template-rows: 64px 1fr 48px;
+
+  /* The fr unit = fraction of available space */
+  gap: 24px;
+
+  min-height: 100vh;
+}
+```
+
+### Named areas: Grid's killer feature
+
+Instead of coordinates, you can assign a name to each zone of the layout:
+
+```css
+.layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  grid-template-rows: 64px 1fr 48px;
+  grid-template-areas:
+    "header  header"
+    "sidebar main"
+    "footer  footer";
+  gap: 16px;
+  min-height: 100vh;
+}
+
+.header  { grid-area: header; }
+.sidebar { grid-area: sidebar; }
+.main    { grid-area: main; }
+.footer  { grid-area: footer; }
+```
+
+```html
+<div class="layout">
+  <header class="header">Header</header>
+  <aside class="sidebar">Sidebar</aside>
+  <main class="main">Main content</main>
+  <footer class="footer">Footer</footer>
+</div>
+```
+
+The complete layout in 10 lines of CSS. No `position: absolute`, no hacks.
+
+### Responsive galleries without media queries
+
+`repeat` + `auto-fill` + `minmax` is one of the most powerful combinations in modern CSS:
+
+```css
+.gallery {
+  display: grid;
+
+  /*
+    auto-fill: creates as many columns as fit
+    minmax(280px, 1fr): each column is at least 280px and at most 1fr
+    Result: the grid adapts automatically to the container width
+  */
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+```
+
+Without a single media query, you get a gallery that goes from 1 to 4 columns based on the available width.
+
+---
+
+## Commonly confused properties
+
+### `gap` replaces `grid-gap`
+
+`grid-gap` is deprecated. Use `gap` directly — it works the same in both Flexbox and Grid:
+
+```css
+/* Old */
+.grid { grid-gap: 20px; }
+
+/* Correct */
+.flex { gap: 16px; }
+.grid { gap: 24px; }
+
+/* You can also separate row and column gap */
+.grid { gap: 16px 24px; } /* row-gap column-gap */
+```
+
+### `align-items` vs `justify-content`
+
+The most common source of confusion. It depends on the main axis:
+
+```css
+/* In Flexbox with flex-direction: row (default) */
+.flex {
+  justify-content: center; /* centers horizontally */
+  align-items: center;     /* centers vertically */
+}
+
+/* Centering a div, the right way */
+.centered {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+```
+
+---
+
+## When to use each?
+
+| Situation | Tool |
+|-----------|------|
+| Navbar, toolbar | Flexbox |
+| Button group or chips | Flexbox |
+| Full page layout | Grid |
+| Card gallery | Grid |
+| Centering an element | Flexbox |
+| Dashboard with multiple sections | Grid |
+| Single-axis component | Flexbox |
+
+<Callout type="warning">
+  **What every senior dev does:** combine both. Grid for the macro page layout, Flexbox for the components inside each cell. It's not one or the other — they're layers.
+</Callout>
+
+---
+
+## References
+
+- [MDN — Flexbox](https://developer.mozilla.org/en-US/docs/Learn/CSS/CSS_layout/Flexbox)
+- [MDN — Grid Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_grid_layout)
+- [CSS Tricks — A Complete Guide to Flexbox](https://css-tricks.com/snippets/css/a-guide-to-flexbox/)
+- [CSS Tricks — A Complete Guide to Grid](https://css-tricks.com/snippets/css/complete-guide-grid/)

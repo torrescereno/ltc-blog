@@ -1,3 +1,7 @@
+"use client";
+
+import { useLanguage } from "@/contexts/language-context";
+import { translations } from "@/i18n/translations";
 import { Post } from "@/types";
 import {
   ArrowLeft,
@@ -6,19 +10,18 @@ import {
   ExternalLink,
   Sparkles,
 } from "lucide-react";
-import { MDXRemote } from "next-mdx-remote/rsc";
 import Link from "next/link";
-import rehypeExternalLinks from "rehype-external-links";
-import rehypeHighlight from "rehype-highlight";
-import remarkGfm from "remark-gfm";
-
-import { mdxComponents } from "./mdx";
+import { ReactNode } from "react";
 
 interface ArticleDetailProps {
   post: Post;
+  children: ReactNode;
 }
 
-export async function ArticleDetail({ post }: ArticleDetailProps) {
+export function ArticleDetail({ post, children }: ArticleDetailProps) {
+  const { language } = useLanguage();
+  const t = translations[language].articleDetail;
+
   return (
     <div className="max-w-3xl mx-auto pb-20">
       {/* Navigation */}
@@ -29,7 +32,7 @@ export async function ArticleDetail({ post }: ArticleDetailProps) {
         <div className="p-1 rounded-full group-hover:bg-muted transition-colors">
           <ArrowLeft size={18} />
         </div>
-        Volver al Feed
+        {t.backToFeed}
       </Link>
 
       {/* Header */}
@@ -44,7 +47,7 @@ export async function ArticleDetail({ post }: ArticleDetailProps) {
           </span>
           <span>•</span>
           <span className="flex items-center gap-1">
-            <Clock size={14} /> {post.readingTime} min de lectura
+            <Clock size={14} /> {post.readingTime} {t.readingTime}
           </span>
         </div>
 
@@ -68,40 +71,23 @@ export async function ArticleDetail({ post }: ArticleDetailProps) {
       <div className="bg-[#fabd2f]/10 border border-[#fabd2f]/30 rounded-xl p-4 md:p-6 mb-12">
         <div className="flex items-center gap-2 mb-3 text-[#fabd2f] font-bold text-sm uppercase tracking-wide">
           <Sparkles size={16} />
-          Resumen Rápido
+          {t.quickSummary}
         </div>
         <p className="text-lg text-foreground leading-relaxed font-medium">
           {post.description}
         </p>
       </div>
 
-      {/* Content Section */}
-      <div className="prose md:prose-lg max-w-none text-[#a89984] prose-headings:text-[#ebdbb2] prose-p:text-[#a89984] prose-a:text-[#fabd2f] prose-strong:text-[#ebdbb2] prose-code:text-[#fabd2f] prose-code:border-0 prose-pre:bg-[#1d2021] prose-pre:text-[#a89984] prose-pre:border prose-pre:border-[#3c3836] prose-li:text-[#a89984]">
-        <MDXRemote
-          source={post.content}
-          components={mdxComponents}
-          options={{
-            mdxOptions: {
-              remarkPlugins: [remarkGfm],
-              rehypePlugins: [
-                rehypeHighlight,
-                [
-                  rehypeExternalLinks,
-                  { target: "_blank", rel: ["noopener", "noreferrer"] },
-                ],
-              ],
-            },
-          }}
-        />
-      </div>
+      {/* Content Section (server-rendered MDX passed as children) */}
+      {children}
 
       {/* Footer Actions */}
       <div className="mt-12 pt-8 border-t border-border">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Calendar size={14} />
-            Publicado el{" "}
-            {new Date(post.date).toLocaleDateString("es-ES", {
+            {t.publishedOn}{" "}
+            {new Date(post.date).toLocaleDateString(t.dateLocale, {
               weekday: "long",
               year: "numeric",
               month: "long",
@@ -113,7 +99,7 @@ export async function ArticleDetail({ post }: ArticleDetailProps) {
             href="/"
             className="inline-flex items-center gap-2 text-sm font-bold text-[#fabd2f] hover:underline"
           >
-            Volver a todos los posts <ExternalLink size={14} />
+            {t.backToAllPosts} <ExternalLink size={14} />
           </Link>
         </div>
       </div>

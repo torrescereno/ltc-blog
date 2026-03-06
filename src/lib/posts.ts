@@ -11,23 +11,33 @@ function calculateReadingTime(content: string): number {
   return Math.max(1, Math.ceil(wordCount / wordsPerMinute));
 }
 
-function getPostFile(slug: string): { fullPath: string; extension: string } | null {
+function getPostFile(
+  slug: string,
+  lang: "es" | "en" = "es",
+): { fullPath: string; extension: string } | null {
+  if (lang === "en") {
+    const enMdxPath = path.join(postsDirectory, `${slug}.en.mdx`);
+    const enMdPath = path.join(postsDirectory, `${slug}.en.md`);
+    if (fs.existsSync(enMdxPath)) return { fullPath: enMdxPath, extension: "mdx" };
+    if (fs.existsSync(enMdPath)) return { fullPath: enMdPath, extension: "md" };
+    // Fall back to Spanish if no English file exists
+  }
+
   const mdxPath = path.join(postsDirectory, `${slug}.mdx`);
   const mdPath = path.join(postsDirectory, `${slug}.md`);
-
-  if (fs.existsSync(mdxPath)) {
-    return { fullPath: mdxPath, extension: "mdx" };
-  }
-  if (fs.existsSync(mdPath)) {
-    return { fullPath: mdPath, extension: "md" };
-  }
+  if (fs.existsSync(mdxPath)) return { fullPath: mdxPath, extension: "mdx" };
+  if (fs.existsSync(mdPath)) return { fullPath: mdPath, extension: "md" };
   return null;
 }
 
 export function getAllPosts(): Post[] {
   const fileNames = fs.readdirSync(postsDirectory);
   const allPosts = fileNames
-    .filter((fileName) => fileName.endsWith(".md") || fileName.endsWith(".mdx"))
+    .filter(
+      (fileName) =>
+        (fileName.endsWith(".md") || fileName.endsWith(".mdx")) &&
+        !fileName.includes(".en."),
+    )
     .map((fileName) => {
       const slug = fileName.replace(/\.(md|mdx)$/, "");
       const fullPath = path.join(postsDirectory, fileName);
@@ -51,9 +61,9 @@ export function getAllPosts(): Post[] {
   return allPosts;
 }
 
-export function getPostBySlug(slug: string): Post | null {
+export function getPostBySlug(slug: string, lang: "es" | "en" = "es"): Post | null {
   try {
-    const fileInfo = getPostFile(slug);
+    const fileInfo = getPostFile(slug, lang);
     if (!fileInfo) return null;
 
     const fileContents = fs.readFileSync(fileInfo.fullPath, "utf8");
@@ -78,7 +88,11 @@ export function getPostBySlug(slug: string): Post | null {
 export function getAllSlugs(): string[] {
   const fileNames = fs.readdirSync(postsDirectory);
   return fileNames
-    .filter((fileName) => fileName.endsWith(".md") || fileName.endsWith(".mdx"))
+    .filter(
+      (fileName) =>
+        (fileName.endsWith(".md") || fileName.endsWith(".mdx")) &&
+        !fileName.includes(".en."),
+    )
     .map((fileName) => fileName.replace(/\.(md|mdx)$/, ""));
 }
 
