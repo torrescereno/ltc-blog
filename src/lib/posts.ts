@@ -18,9 +18,9 @@ function getPostFile(
   if (lang === "en") {
     const enMdxPath = path.join(postsDirectory, `${slug}.en.mdx`);
     const enMdPath = path.join(postsDirectory, `${slug}.en.md`);
-    if (fs.existsSync(enMdxPath)) return { fullPath: enMdxPath, extension: "mdx" };
+    if (fs.existsSync(enMdxPath))
+      return { fullPath: enMdxPath, extension: "mdx" };
     if (fs.existsSync(enMdPath)) return { fullPath: enMdPath, extension: "md" };
-    // Fall back to Spanish if no English file exists
   }
 
   const mdxPath = path.join(postsDirectory, `${slug}.mdx`);
@@ -68,7 +68,10 @@ export function getAllPostsByLang(lang: "es" | "en" = "es"): Post[] {
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
-export function getPostBySlug(slug: string, lang: "es" | "en" = "es"): Post | null {
+export function getPostBySlug(
+  slug: string,
+  lang: "es" | "en" = "es",
+): Post | null {
   try {
     const fileInfo = getPostFile(slug, lang);
     if (!fileInfo) return null;

@@ -3,16 +3,16 @@
 
 :root {
   /* Gruvbox Dark Theme */
-  --background: #282828;       /* bg0 */
-  --foreground: #ebdbb2;       /* fg1 - main text */
-  --muted: #3c3836;            /* bg1 - elevated surfaces */
+  --background: #282828; /* bg0 */
+  --foreground: #ebdbb2; /* fg1 - main text */
+  --muted: #3c3836; /* bg1 - elevated surfaces */
   --muted-foreground: #a89984; /* fg4 - secondary text */
-  --card: #32302f;             /* dark0_soft - card backgrounds */
-  --card-foreground: #ebdbb2;  /* fg1 - card text */
-  --border: #504945;           /* bg2 - borders */
-  --input: #3c3836;            /* bg1 - input fields */
-  --ring: #fabd2f;             /* bright_yellow - accent/focus rings */
-  
+  --card: #32302f; /* dark0_soft - card backgrounds */
+  --card-foreground: #ebdbb2; /* fg1 - card text */
+  --border: #504945; /* bg2 - borders */
+  --input: #3c3836; /* bg1 - input fields */
+  --ring: #fabd2f; /* bright_yellow - accent/focus rings */
+
   /* Gruvbox accent colors */
   --gruv-red: #fb4934;
   --gruv-green: #b8bb26;

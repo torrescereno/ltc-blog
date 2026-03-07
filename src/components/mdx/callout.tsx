@@ -15,19 +15,12 @@ const styles = {
   warning: {
     bg: "bg-[#fe8019]/10",
     border: "border-[#fe8019]/30",
-    icon: (
-      <AlertTriangle
-        size={20}
-        className="text-[#fe8019]"
-      />
-    ),
+    icon: <AlertTriangle size={20} className="text-[#fe8019]" />,
   },
   tip: {
     bg: "bg-[#b8bb26]/10",
     border: "border-[#b8bb26]/30",
-    icon: (
-      <Lightbulb size={20} className="text-[#b8bb26]" />
-    ),
+    icon: <Lightbulb size={20} className="text-[#b8bb26]" />,
   },
   danger: {
     bg: "bg-[#fb4934]/10",
@@ -42,7 +35,7 @@ export function Callout({ type = "info", children }: CalloutProps) {
     <div
       className={`${style.bg} ${style.border} border rounded-lg p-4 my-6 flex gap-3`}
     >
-      <div className="flex-shrink-0 mt-0.5">{style.icon}</div>
+      <div className="shrink-0 mt-0.5">{style.icon}</div>
       <div className="prose-p:my-0">{children}</div>
     </div>
   );

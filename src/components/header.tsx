@@ -1,7 +1,10 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+
 "use client";
 
 import { useLanguage } from "@/contexts/language-context";
 import { Github } from "lucide-react";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
@@ -28,7 +31,6 @@ export function Header() {
     } else if (isArticle) {
       router.push(`/en${pathname}`);
     } else {
-      // Home page: only toggle UI strings
       setLanguage(language === "es" ? "en" : "es");
     }
   };
@@ -38,12 +40,12 @@ export function Header() {
       <div className="max-w-4xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <a
+          <Link
             href="/"
             className="w-8 h-8 p-5 flex items-center justify-center font-bold text-lg shrink-0"
           >
             LTC
-          </a>
+          </Link>
 
           {/* Actions */}
           <div className="flex items-center gap-2">
