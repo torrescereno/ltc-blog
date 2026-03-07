@@ -169,7 +169,7 @@ export function ArticleList({ posts }: ArticleListProps) {
             <div className="flex items-center justify-between gap-2 sm:gap-4 py-3 px-2 rounded-md hover:bg-muted transition-colors cursor-pointer w-full border-b border-border/30 last:border-b-0">
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <span className="text-xs font-mono text-muted-foreground shrink-0">
-                  {post.category.slice(0, 3).toUpperCase()}
+                  {t.categories[post.category as keyof typeof t.categories].slice(0, 3).toUpperCase()}
                 </span>
                 <h4 className="text-sm md:text-base font-medium text-foreground group-hover:text-[#fabd2f] transition-colors truncate">
                   {post.title}
