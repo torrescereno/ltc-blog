@@ -1,9 +1,8 @@
-import { getAllPostsByLang } from "@/lib/posts";
+import { getAllPosts } from "@/lib/posts";
 import { HomePageContent } from "@/components/home-page-content";
 
 export default async function Home() {
-  const esPosts = getAllPostsByLang("es");
-  const enPosts = getAllPostsByLang("en");
+  const posts = getAllPosts();
 
-  return <HomePageContent esPosts={esPosts} enPosts={enPosts} />;
+  return <HomePageContent posts={posts} />;
 }

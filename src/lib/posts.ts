@@ -13,16 +13,7 @@ function calculateReadingTime(content: string): number {
 
 function getPostFile(
   slug: string,
-  lang: "es" | "en" = "es",
 ): { fullPath: string; extension: string } | null {
-  if (lang === "en") {
-    const enMdxPath = path.join(postsDirectory, `${slug}.en.mdx`);
-    const enMdPath = path.join(postsDirectory, `${slug}.en.md`);
-    if (fs.existsSync(enMdxPath))
-      return { fullPath: enMdxPath, extension: "mdx" };
-    if (fs.existsSync(enMdPath)) return { fullPath: enMdPath, extension: "md" };
-  }
-
   const mdxPath = path.join(postsDirectory, `${slug}.mdx`);
   const mdPath = path.join(postsDirectory, `${slug}.md`);
   if (fs.existsSync(mdxPath)) return { fullPath: mdxPath, extension: "mdx" };
@@ -31,10 +22,6 @@ function getPostFile(
 }
 
 export function getAllPosts(): Post[] {
-  return getAllPostsByLang("es");
-}
-
-export function getAllPostsByLang(lang: "es" | "en" = "es"): Post[] {
   const fileNames = fs.readdirSync(postsDirectory);
   const slugs = fileNames
     .filter(
@@ -46,7 +33,7 @@ export function getAllPostsByLang(lang: "es" | "en" = "es"): Post[] {
 
   return slugs
     .map((slug) => {
-      const fileInfo = getPostFile(slug, lang);
+      const fileInfo = getPostFile(slug);
       if (!fileInfo) return null;
 
       const fileContents = fs.readFileSync(fileInfo.fullPath, "utf8");
@@ -68,12 +55,9 @@ export function getAllPostsByLang(lang: "es" | "en" = "es"): Post[] {
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
-export function getPostBySlug(
-  slug: string,
-  lang: "es" | "en" = "es",
-): Post | null {
+export function getPostBySlug(slug: string): Post | null {
   try {
-    const fileInfo = getPostFile(slug, lang);
+    const fileInfo = getPostFile(slug);
     if (!fileInfo) return null;
 
     const fileContents = fs.readFileSync(fileInfo.fullPath, "utf8");

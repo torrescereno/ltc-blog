@@ -4,31 +4,24 @@ import { ArticleList } from "@/components/article-list";
 import { Header } from "@/components/header";
 import { PostFilters } from "@/components/post-filters";
 import { ScrollToTop } from "@/components/scroll-to-top";
-import { useLanguage } from "@/contexts/language-context";
 import { Category, Post } from "@/types";
 import { useMemo, useState } from "react";
 
 interface HomePageContentProps {
-  esPosts: Post[];
-  enPosts: Post[];
+  posts: Post[];
 }
 
-export function HomePageContent({ esPosts, enPosts }: HomePageContentProps) {
-  const { language } = useLanguage();
-  const posts = language === "en" ? enPosts : esPosts;
+export function HomePageContent({ posts }: HomePageContentProps) {
   const [activeCategory, setActiveCategory] = useState<Category>("Todos");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Filter posts based on category and search query
   const filteredPosts = useMemo(() => {
     let result = posts;
 
-    // Filter by category
     if (activeCategory !== "Todos") {
       result = result.filter((post) => post.category === activeCategory);
     }
 
-    // Filter by search query
     if (searchQuery.trim()) {
       const lowerQuery = searchQuery.toLowerCase();
       result = result.filter(

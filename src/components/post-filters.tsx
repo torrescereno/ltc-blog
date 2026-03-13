@@ -1,7 +1,6 @@
 "use client";
 
-import { useLanguage } from "@/contexts/language-context";
-import { translations } from "@/i18n/translations";
+import { t } from "@/i18n/translations";
 import { Category } from "@/types";
 import { ChevronDown, Search } from "lucide-react";
 
@@ -28,12 +27,8 @@ export function PostFilters({
   searchQuery,
   onSearchChange,
 }: PostFiltersProps) {
-  const { language } = useLanguage();
-  const t = translations[language];
-
   return (
     <div className="flex flex-col sm:flex-row gap-4 mb-16">
-      {/* Category Selector */}
       <div className="relative w-full sm:w-auto">
         <select
           value={activeCategory}
@@ -56,7 +51,6 @@ export function PostFilters({
         />
       </div>
 
-      {/* Search Input */}
       <div className="relative grow">
         <input
           type="text"

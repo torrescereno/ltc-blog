@@ -5,16 +5,13 @@ import { createPortal } from "react-dom";
 import { SearchX } from "lucide-react";
 import { Post } from "@/types";
 import Link from "next/link";
-import { useLanguage } from "@/contexts/language-context";
-import { translations } from "@/i18n/translations";
+import { t } from "@/i18n/translations";
 
 interface ArticleListProps {
   posts: Post[];
 }
 
 export function ArticleList({ posts }: ArticleListProps) {
-  const { language } = useLanguage();
-  const t = translations[language];
   const [hoveredPost, setHoveredPost] = useState<Post | null>(null);
   const mounted = useSyncExternalStore(
     () => () => {},
@@ -24,7 +21,6 @@ export function ArticleList({ posts }: ArticleListProps) {
   const tooltipRef = useRef<HTMLDivElement>(null);
   const mousePositionRef = useRef({ x: 0, y: 0 });
 
-  // Update tooltip position based on current mouse position
   const updateTooltipPosition = () => {
     if (!tooltipRef.current) return;
 
@@ -33,16 +29,13 @@ export function ArticleList({ posts }: ArticleListProps) {
     const tooltipHeight = tooltip.offsetHeight;
     const tooltipWidth = tooltip.offsetWidth;
 
-    // Default: position below and to the right of cursor
     let left = x + 20;
     let top = y + 20;
 
-    // Adjust if it goes off right edge
     if (left + tooltipWidth > window.innerWidth) {
       left = x - tooltipWidth - 20;
     }
 
-    // If too close to bottom, show above cursor instead
     if (top + tooltipHeight > window.innerHeight) {
       top = y - tooltipHeight - 20;
     }
@@ -50,7 +43,6 @@ export function ArticleList({ posts }: ArticleListProps) {
     tooltip.style.transform = `translate(${left}px, ${top}px)`;
   };
 
-  // Handle mouse movement for the floating tooltip
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       mousePositionRef.current = { x: e.clientX, y: e.clientY };
@@ -61,15 +53,12 @@ export function ArticleList({ posts }: ArticleListProps) {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
-  // Update position immediately when hoveredPost changes (fixes size change offset)
   useEffect(() => {
     if (hoveredPost) {
-      // Use requestAnimationFrame to ensure DOM has updated with new content
       requestAnimationFrame(updateTooltipPosition);
     }
   }, [hoveredPost]);
 
-  // Recalculate position when tooltip resizes (content changes)
   useEffect(() => {
     if (!tooltipRef.current) return;
 
@@ -81,12 +70,10 @@ export function ArticleList({ posts }: ArticleListProps) {
     return () => resizeObserver.disconnect();
   }, []);
 
-  // Sort posts by date (newest first)
   const sortedPosts = [...posts].sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
   );
 
-  // Format date as dd/mm/yyyy
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     const day = date.getDate().toString().padStart(2, "0");
@@ -113,12 +100,11 @@ export function ArticleList({ posts }: ArticleListProps) {
 
   return (
     <>
-      {/* Floating Preview Card (Desktop Only) - Rendered via Portal */}
       {mounted &&
         createPortal(
           <div
             ref={tooltipRef}
-            className={`fixed top-0 left-0 z-9999 pointer-events-none  hidden md:block w-80 bg-card border border-border shadow-2xl rounded-lg overflow-hidden ${
+            className={`fixed top-0 left-0 z-9999 pointer-events-none hidden md:block w-80 bg-card border border-border shadow-2xl rounded-lg overflow-hidden ${
               hoveredPost ? "opacity-100" : "opacity-0"
             }`}
           >
@@ -156,12 +142,11 @@ export function ArticleList({ posts }: ArticleListProps) {
           document.body,
         )}
 
-      {/* Article List */}
       <div className="space-y-0 max-w-3xl mx-auto w-full">
         {sortedPosts.map((post: Post) => (
           <Link
             key={post.id}
-            href={language === "en" ? `/en/${post.slug}` : `/${post.slug}`}
+            href={`/${post.slug}`}
             className="group block w-full"
             onMouseEnter={() => setHoveredPost(post)}
             onMouseLeave={() => setHoveredPost(null)}
