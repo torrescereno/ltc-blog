@@ -254,7 +254,10 @@ app.whenReady().then(() => {
 ```
 
 <Callout type="warning">
-  **Importante:** hay que inicializar todo **antes** de crear la ventana. El renderer se carga y puede enviar mensajes IPC inmediatamente. Si registras los IPC después de `createWindow()`, existe una _race condition_ donde el renderer podría intentar comunicarse antes de que los handlers existan.
+  **Importante:** hay que inicializar todo **antes** de crear la ventana. El
+  renderer se carga y puede enviar mensajes IPC inmediatamente. Si registras los
+  IPC después de `createWindow()`, existe una _race condition_ donde el renderer
+  podría intentar comunicarse antes de que los handlers existan.
 </Callout>
 
 ---
@@ -413,7 +416,7 @@ La respuesta vuelve por el mismo canal
 
 Esto es lo fundamental sobre el uso de Electron. La API es extensa y herramientas como electron-vite hacen gran parte del trabajo pesado, pero lo importante es entender cómo fluye la información en la aplicación: cómo se comunica la API de Electron con el frontend (y viceversa) y cómo se implementa una comunicación segura mediante el preload y `contextBridge`.
 
-El proyecto completo lo puedes ver en [https://github.com/torrescereno/hollow](https://github.com/torrescereno/hollow). Es un Pomodoro sencillo y minimalista para establecer lapsos de trabajo más acotados y que después no te duela la vista de tanto estar frente al PC.
+El proyecto completo lo puedes ver en [https://github.com/torrescereno/hollow](https://github.com/torrescereno/hollow). Es un Pomodoro sencillo y minimalista para establecer lapsos de trabajo más acotados y que después no te moleste la vista de tanto estar frente al PC.
 
 ---
 
