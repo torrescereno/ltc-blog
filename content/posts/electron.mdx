@@ -1,0 +1,426 @@
+---
+title: "Electron: Guía práctica para el desarrollo de aplicaciones de escritorio"
+description: "Aprende los fundamentos de Electron: Main, Renderer, Preload y cómo se comunican mediante IPC y contextBridge para crear aplicaciones de escritorio seguras con tecnologías web."
+date: "2026-03-14"
+category: "Desarrollo"
+tags: ["electron", "react", "frontend"]
+---
+
+Electron es uno de los frameworks más usados para el desarrollo de aplicaciones de escritorio. Es muy popular y fácil de implementar, ya que utiliza la plataforma web como base. Se puede incorporar cualquier framework de JavaScript y la comunicación entre la API de Electron (Node) y el front (renderer) es segura gracias a `contextBridge`.
+
+## Los 3 componentes principales
+
+Existen tres componentes fundamentales:
+
+- **Main**: la capa backend de Electron. Aquí vive la lógica del proceso principal.
+- **Renderer**: el frontend, donde se renderiza nuestro framework (React, Vue, etc.).
+- **Preload**: una capa intermedia de comunicación segura entre el main y el renderer.
+
+Para ahorrarnos problemas de configuración, existen herramientas como [electron-vite](https://electron-vite.org/) que estructuran el proyecto y configuran toda la comunicación entre preload, main y renderer.
+
+---
+
+## Main: la base de Electron
+
+El `main.js` (o `main.ts`) es la base de Electron. Aquí se configura el tamaño inicial de la ventana, las variables compartidas con el front, el IPC (_Inter-Process Communication_, que no es el Índice de Precios al Consumidor) y el renderer.
+
+Para ilustrar mejor cada concepto, veamos el main de una aplicación tipo Pomodoro que hice para probar Electron:
+
+```ts
+import { app, BrowserWindow, nativeImage } from "electron";
+import Store from "electron-store";
+import { join } from "path";
+import { is } from "@electron-toolkit/utils";
+import { setupAutoUpdater, setMainWindow, startPolling } from "./autoUpdater";
+import { initDatabase, closeDatabase } from "../database/client";
+import {
+  registerSessionIPC,
+  registerWindowIPC,
+  registerConfigIPC,
+  registerAppIPC,
+  registerUpdateIPC,
+} from "./ipc";
+import type { AppConfig } from "../shared/types";
+
+export interface StoreSchema {
+  isPinned: boolean;
+  config: AppConfig;
+}
+
+const store = new Store<StoreSchema>({
+  defaults: {
+    isPinned: false,
+    config: {
+      focusMinutes: 25,
+      restMinutes: 2,
+      soundEnabled: true,
+      selectedSound: "bell",
+      confettiEnabled: true,
+    },
+  },
+});
+
+let mainWindow: BrowserWindow | null = null;
+
+function createWindow(): void {
+  const isPinned = store.get("isPinned", false);
+  const initWidth = 260;
+  const initHeight = 160;
+
+  let iconPath: string;
+  if (is.dev) {
+    iconPath = join(__dirname, "../../resources/icon.png");
+  } else {
+    iconPath = join(process.resourcesPath, "icon.png");
+  }
+
+  const icon = nativeImage.createFromPath(iconPath);
+  if (process.platform === "darwin" && !icon.isEmpty()) {
+    app.dock?.setIcon(iconPath);
+  }
+
+  mainWindow = new BrowserWindow({
+    icon,
+    width: initWidth,
+    height: initHeight,
+    frame: false,
+    transparent: true,
+    backgroundColor: "#00000000",
+    resizable: false,
+    alwaysOnTop: isPinned,
+    skipTaskbar: false,
+    hasShadow: false,
+    webPreferences: {
+      preload: join(__dirname, "../preload/index.js"),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: false,
+    },
+  });
+
+  mainWindow.setVisibleOnAllWorkspaces(true);
+
+  if (is.dev && process.env["ELECTRON_RENDERER_URL"]) {
+    mainWindow.loadURL(process.env["ELECTRON_RENDERER_URL"]);
+  } else {
+    mainWindow.loadFile(join(__dirname, "../renderer/index.html"));
+  }
+
+  mainWindow.on("closed", () => {
+    mainWindow = null;
+  });
+
+  mainWindow.webContents.on("did-finish-load", () => {
+    mainWindow?.webContents.send("pinned-state", isPinned);
+  });
+}
+
+// ── Single instance lock (native Electron API) ──
+const gotTheLock = app.requestSingleInstanceLock();
+
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on("second-instance", () => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    }
+  });
+
+  app.on("window-all-closed", () => {
+    if (process.platform !== "darwin") {
+      closeDatabase();
+      app.quit();
+    }
+  });
+
+  app.on("before-quit", () => {
+    closeDatabase();
+  });
+
+  app.whenReady().then(() => {
+    initDatabase();
+    registerSessionIPC();
+    registerWindowIPC(() => mainWindow, store);
+    registerConfigIPC(store);
+    registerAppIPC();
+    registerUpdateIPC();
+    createWindow();
+
+    if (!is.dev) {
+      if (mainWindow) setupAutoUpdater(mainWindow);
+      startPolling();
+    }
+
+    app.on("activate", () => {
+      if (BrowserWindow.getAllWindows().length === 0) {
+        createWindow();
+        if (mainWindow && !is.dev) {
+          setMainWindow(mainWindow);
+        }
+      }
+    });
+  });
+}
+```
+
+Vamos por partes.
+
+### Electron Store
+
+Aquí uso un store que me ayuda a guardar información que no necesita estar en la base de datos, como si en la última sesión el usuario dejó anclado el timer o el tono seleccionado:
+
+```ts
+import Store from "electron-store";
+
+const store = new Store<StoreSchema>({
+  defaults: {
+    isPinned: false,
+    config: {
+      focusMinutes: 25,
+      restMinutes: 2,
+      soundEnabled: true,
+      selectedSound: "bell",
+      confettiEnabled: true,
+    },
+  },
+});
+```
+
+`electron-store` es una librería que crea un JSON (`config.json`) con la información que necesites, ubicado en la raíz del proyecto o donde se haya instalado la aplicación. Está pensado para guardar información no sensible, así que para la configuración de la app era la opción ideal.
+
+Obtener valores del store es tan sencillo como:
+
+```ts
+const isPinned = store.get("isPinned", false);
+```
+
+O accediendo a propiedades anidadas:
+
+```ts
+const minutos = store.get("config.focusMinutes");
+```
+
+### Crear la ventana
+
+La función `createWindow()` se encarga de inicializar la ventana. Lo más relevante es la instancia de `BrowserWindow`:
+
+```ts
+mainWindow = new BrowserWindow({
+  icon,
+  width: initWidth,
+  height: initHeight,
+  frame: false,
+  transparent: true,
+  backgroundColor: "#00000000",
+  resizable: false,
+  alwaysOnTop: isPinned,
+  skipTaskbar: false,
+  hasShadow: false,
+  webPreferences: {
+    preload: join(__dirname, "../preload/index.js"),
+    contextIsolation: true,
+    nodeIntegration: false,
+    sandbox: false,
+  },
+});
+```
+
+Esta clase recibe toda la configuración visual de la ventana: tamaño, barra superior, si se permite redimensionar, transparencia, etc.
+
+### Instancia única
+
+Para evitar que se abra otra instancia si la aplicación ya está corriendo:
+
+```ts
+const gotTheLock = app.requestSingleInstanceLock();
+```
+
+### Inicialización
+
+Por último, la base de datos, los distintos IPC y la ventana se crean cuando la aplicación está lista:
+
+```ts
+app.whenReady().then(() => {
+  initDatabase();
+  registerSessionIPC();
+  registerWindowIPC(() => mainWindow, store);
+  registerConfigIPC(store);
+  registerAppIPC();
+  registerUpdateIPC();
+  createWindow();
+});
+```
+
+<Callout type="warning">
+  **Importante:** hay que inicializar todo **antes** de crear la ventana. El renderer se carga y puede enviar mensajes IPC inmediatamente. Si registras los IPC después de `createWindow()`, existe una _race condition_ donde el renderer podría intentar comunicarse antes de que los handlers existan.
+</Callout>
+
+---
+
+## IPC: la comunicación entre procesos
+
+Los IPC contienen funciones (asociadas a canales específicos) que nos permiten comunicar el renderer con el main.
+
+Veamos un ejemplo de un IPC que consulta los datos de las sesiones:
+
+```ts
+import { ipcMain } from "electron";
+import { statsService } from "../../database/services/stats.service";
+
+type FullStats = ReturnType<typeof statsService.getFullStats>;
+
+export function registerSessionIPC(): void {
+  ipcMain.handle("session:get-full-stats", async (): Promise<FullStats> => {
+    try {
+      return statsService.getFullStats();
+    } catch (error) {
+      console.error("Failed to get full stats:", error);
+      return {
+        today: { sessions: 0, minutes: 0 },
+        week: { sessions: 0, minutes: 0 },
+        total: { sessions: 0, minutes: 0 },
+        streak: 0,
+        bestStreak: 0,
+        avgPerDay: 0,
+        longestSession: 0,
+        completionRate: 0,
+        weeklyActivity: [],
+      };
+    }
+  });
+}
+```
+
+Con `ipcMain` creamos un `handle` identificando el nombre del canal y retornando el dato que necesitemos. En este ejemplo se consultan estadísticas desde un servicio. Para entender lo que retorna, basta con ver el `catch`: le estoy entregando al renderer un objeto con todos los valores que se pintan en la vista de "Estadísticas".
+
+---
+
+## Preload: el puente seguro
+
+El renderer se encarga de la UI de nuestra aplicación. Puedes usar casi cualquier framework; en este ejemplo usé React con Vite. Pero antes de llegar al renderer, necesitamos entender cómo nos comunicamos con la API de Electron.
+
+Electron utiliza una capa intermedia llamada **preload**. Esta capa genera un puente seguro entre la API de Electron y el renderer, garantizando el aislamiento de la información que se traspasa entre ambos componentes.
+
+Sin `contextBridge`, el renderer tendría acceso directo a Node y Electron, lo cual es inseguro: cualquier código malicioso en la página podría acceder a todo el sistema.
+
+Siguiendo con el ejemplo de `session:get-full-stats`:
+
+```ts
+import { contextBridge, ipcRenderer } from "electron";
+import type { FullSessionStats } from "../database/schema";
+
+contextBridge.exposeInMainWorld("electronAPI", {
+  session: {
+    getFullStats: (): Promise<FullSessionStats> =>
+      ipcRenderer.invoke("session:get-full-stats"),
+  },
+});
+```
+
+Creamos el puente con el nombre `electronAPI` y definimos el `invoke` usando el mismo nombre de canal que registramos en el IPC: `session:get-full-stats`.
+
+---
+
+## Renderer: consumiendo la API desde el front
+
+En el renderer accedemos al contexto del puente a través de `window.electronAPI`:
+
+```ts
+class ElectronService {
+  private get api(): ElectronAPI | undefined {
+    return window.electronAPI;
+  }
+
+  async getFullSessionStats(): Promise<FullSessionStats> {
+    return (
+      (await this.api?.session.getFullStats()) ?? {
+        today: { sessions: 0, minutes: 0 },
+        week: { sessions: 0, minutes: 0 },
+        total: { sessions: 0, minutes: 0 },
+        streak: 0,
+        bestStreak: 0,
+        avgPerDay: 0,
+        longestSession: 0,
+        completionRate: 0,
+        weeklyActivity: [],
+      }
+    );
+  }
+}
+```
+
+Con la conexión establecida, solo queda usarla. Aquí un hook de React que consume las estadísticas:
+
+```ts
+import { useState, useEffect, useCallback } from "react";
+import { sessionsService } from "../services";
+import type { Stats } from "../schemas/stats.schema";
+
+interface UseStatsReturn {
+  stats: Stats;
+  refresh: () => Promise<void>;
+}
+
+export function useStats(): UseStatsReturn {
+  const [stats, setStats] = useState<Stats>({
+    today: { sessions: 0, minutes: 0 },
+    week: { sessions: 0, minutes: 0 },
+    total: { sessions: 0, minutes: 0 },
+    streak: 0,
+    bestStreak: 0,
+    avgPerDay: 0,
+    longestSession: 0,
+    completionRate: 0,
+    weeklyActivity: [],
+  });
+
+  const loadStats = useCallback(async () => {
+    const apiStats = await sessionsService.getFullStats();
+    setStats(apiStats);
+  }, []);
+
+  useEffect(() => {
+    loadStats();
+  }, [loadStats]);
+
+  return { stats, refresh: loadStats };
+}
+```
+
+---
+
+## Flujo completo de `session:get-full-stats`
+
+```
+this.api?.session.getFullStats()
+    ↓
+window.electronAPI.session.getFullStats()
+    ↓
+preload: ipcRenderer.invoke('session:get-full-stats')
+    ↓
+ipcMain.handle('session:get-full-stats', ...)
+    ↓
+Main Process: lógica de negocio
+    ↓
+La respuesta vuelve por el mismo canal
+```
+
+---
+
+## Conclusión
+
+Esto es lo fundamental sobre el uso de Electron. La API es extensa y herramientas como electron-vite hacen gran parte del trabajo pesado, pero lo importante es entender cómo fluye la información en la aplicación: cómo se comunica la API de Electron con el frontend (y viceversa) y cómo se implementa una comunicación segura mediante el preload y `contextBridge`.
+
+El proyecto completo lo puedes ver en [https://github.com/torrescereno/hollow](https://github.com/torrescereno/hollow). Es un Pomodoro sencillo y minimalista para establecer lapsos de trabajo más acotados y que después no te duela la vista de tanto estar frente al PC.
+
+---
+
+## Referencias
+
+- [Electron Documentation](https://www.electronjs.org/docs/latest/)
+- [electron-vite](https://electron-vite.org/)
+- [electron-store](https://github.com/sindresorhus/electron-store)
+- [Electron IPC Communication](https://www.electronjs.org/docs/latest/tutorial/ipc)
+- [Context Bridge](https://www.electronjs.org/docs/latest/api/context-bridge)
